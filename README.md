@@ -1,6 +1,8 @@
 # Terminal 3D Viewer
 Simple terminal 3D object viewer written in Assembly Language (NASM x86).
 
+![](img/demo.gif)
+
 Features:
 * object always in center of terminal window
 * automatic rotation 

@@ -9,8 +9,11 @@
 ; delete some ifs that are never reachable (?)
 ; user friendly errors
 ; interactive mode (rotate and scale using keys)
-; depth, perspective, rotate camera view
-; divide into separate files (maybe)
+; depth, perspective, change pos of camera view, rotate camera view
+; scale
+; change code to comply with the asm x86 conventions, e.g. proper usage of registers
+
+%include "rotations.asm"
 
 ROW equ 200            
 COL equ 300
@@ -24,13 +27,15 @@ SYS_WRITE equ 4
 O_RDONLY equ 0
 
 section .data
-    radian dd 0.01745329252
-
+    radian dd 0.01745329252         ;degree/radian
+    ;struct represents time to stop program used by _sleep function
     timespec:
         tv_sec dq 0
         tv_nsec dq 14000000
 
 section .bss
+    ;array that represents display, 
+    ;if terminal size (coll*rows) is bigger than declared size program will crash
     display resb MAX_DISPLAY_SIZE
     x resb 8
     y resb 8
@@ -46,9 +51,7 @@ section .bss
     theta resb 4
     sintheta resb 4
     costheta resb 4
-
     object resw 120
-
     xshift resw 1
     yshift resw 1
 
@@ -71,24 +74,6 @@ section .text
     mov r10, %3
     mov r11, %4
     call _addLineToDisplay
-%endmacro
-
-%macro rotateX3D 1
-    mov rax, %1
-    cvtsi2ss xmm0, rax
-    call _rotateX3D
-%endmacro
-
-%macro rotateY3D 1
-    mov rax, %1
-    cvtsi2ss xmm0, rax
-    call _rotateY3D
-%endmacro
-
-%macro rotateZ3D 1
-    mov rax, %1
-    cvtsi2ss xmm0, rax
-    call _rotateZ3D
 %endmacro
 
 _start:
@@ -118,21 +103,19 @@ _start:
 ;Fill display aray with blank spaces
 _prepareDisplay:
     mov rdx, display
-    mov rax, display_size
-    mov bx, word[rax]  
+    mov bx, [display_size]  
     mov rcx, rbx 
 .loop:
     push rdx
     mov rdx, 0
     mov rax, rcx
     push rcx
-    mov r8, coll
-    mov r9w, word[r8]
-    mov rcx, r9
+    mov cx, [coll]
     div rcx
     pop rcx
     cmp rdx, 0
     pop rdx
+    ;if it's enf of line insert newline character to array, if not insert space character
     jne .noEndOfLine
     mov byte[rdx], 10
     jmp .skip
@@ -143,7 +126,8 @@ _prepareDisplay:
     loop .loop
     ret
 
-;Add line to display array
+;Insert line to dsiplay array
+;r8 = x1, r9 = y1, r10 = x2, r11 = y2
 _addLineToDisplay:
     ;if x1 is greater than x2 replace p1(x1, y1) with p2(x2, y2)
     cmp r8, r10
@@ -216,7 +200,7 @@ _ifend2:
     mov rcx, [x]
     cmp rcx, 0
     jl .skip
-    cmp cx, word[coll]
+    cmp cx, [coll]
     jge .skip
     mov rax, [y]
     cmp rax, 0
@@ -224,10 +208,8 @@ _ifend2:
 
     add rcx, display
     push rdx
-    push rax
-    mov rdx, coll
-    mov ax, word[rdx]            
-    mov rbx, rax
+    push rax  
+    mov bx, [coll]
     pop rax
     pop rdx
     mul rbx
@@ -285,7 +267,7 @@ _ifend3:
     mov rcx, [rsp]
     cmp rcx, 0
     jl .skip
-    cmp cx, word[coll]
+    cmp cx, [coll]
     jge .skip
     mov rax, [y]
     cmp rax, 0
@@ -295,7 +277,7 @@ _ifend3:
     push rdx
     push rax
     mov rdx, coll
-    mov ax, word[rdx]
+    mov ax, [rdx]
     mov rbx, rax
     pop rax
     pop rdx
@@ -329,7 +311,7 @@ _ifend5:
     mov rcx, [x]
     cmp rcx, 0
     jl .skip
-    cmp cx, word[coll]
+    cmp cx, [coll]
     jge .skip
     mov rax, [y]
     cmp rax, 0
@@ -338,8 +320,7 @@ _ifend5:
     add rcx, display            ;rcx = display
     push rdx
     push rax
-    mov rdx, coll
-    mov ax, word[rdx]
+    mov ax, [coll]
     mov rbx, rax
     pop rax
     pop rdx
@@ -399,7 +380,7 @@ _ifend6:
     mov rcx, [x]
     cmp rcx, 0
     jl .skip
-    cmp cx, word[coll]
+    cmp cx, [coll]
     jge .skip
     mov rax, [rsp]
     cmp rax, 0
@@ -407,8 +388,7 @@ _ifend6:
     add rcx, display
     push rdx
     push rax
-    mov rdx, coll
-    mov ax, word[rdx]
+    mov ax, [coll]
     mov rbx, rax
     pop rax
     pop rdx
@@ -422,9 +402,9 @@ _ifend6:
     dec rax
     jnz _loop2
 _ifend1:
-    ret                         ;return
+    ret
 
-    
+;load given filename (console 1st argument) to object variable    
 _load3dObject:
     mov rbx, [rsp + 24]
     mov rax, SYS_OPEN
@@ -459,7 +439,7 @@ _load3dObject:
     .next:
 
     mov r10, object
-    mov word[r10], r8w
+    mov [r10], r8w
     add r10, 2
     
 
@@ -486,7 +466,7 @@ _load3dObject:
     jmp .loop2
     .next2:
 
-    mov word[r10], r9w
+    mov [r10], r9w
     add r10, 2
 
 
@@ -541,7 +521,7 @@ _load3dObject:
     push rcx
     push rbx
     jnz .loop3
-    pop rbx             ;clear stack
+    pop rbx
     pop rcx
     push rbx
 
@@ -584,7 +564,7 @@ _load3dObject:
     push rcx
     push rbx
     jnz .loop5
-    pop rdi             ;clear stack
+    pop rdi
     pop rcx
     
     mov rax, SYS_CLOSE
@@ -593,12 +573,10 @@ _load3dObject:
     xor rcx, rcx            ;todo delete this, replace lines in drawcube with rax not , dword[rax]
     ret
 
-
+;draw object from given variable, actually it's static and draws object from "object" variable but it can work with any object variable
 _drawObject:
-    mov rdx, object         ;load object
-    mov bx, word[rdx]       ;load number of nodes
-    add rdx, 2
-    mov cx, word[rdx]       ;load number of connections
+    mov bx, [object]        ;number of nodes
+    mov cx, [object+2]      ;number of connectins
 
 .loop:
     push rbx
@@ -616,38 +594,38 @@ _drawObject:
     add rdx, rax
     push rdx
 
-    mov ax, word[rdx]
+    mov ax, [rdx]
 
     mov rbx, 12
     mul rbx
     mov rdx, object
     add rdx, rax
     add rdx, 4
-    cvtss2si r8, dword[rdx]
+    cvtss2si r8, [rdx]
     add rdx, 4
-    cvtss2si r9, dword[rdx]
+    cvtss2si r9, [rdx]
     add rdx, 4  
 
 
     pop rdx
     add rdx, 2
-    mov ax, word[rdx]
+    mov ax, [rdx]
     mov rbx, 12
     mul rbx
     mov rdx, object
     add rdx, rax
     add rdx, 4
-    cvtss2si r10, dword[rdx]
+    cvtss2si r10, [rdx]
     add rdx, 4
-    cvtss2si r11, dword[rdx]
+    cvtss2si r11, [rdx]
 
     mov rax, xshift         ;do it better
-    mov bx, word[rax]
+    mov bx, [rax]
     add r8, rbx
     add r10, rbx
 
     mov rax, yshift         ;do it better
-    mov bx, word[rax]
+    mov bx, [rax]
     add r9, rbx
     add r11, rbx
 
@@ -667,159 +645,7 @@ _drawObject:
     jnz .loop
     ret
 
-
-;Rotate objec around x axis by xmm0 degrees
-_rotateX3D:
-    movss dword[theta], xmm0            ;theta = degrees
-    fld dword[theta]                    ;st0 = theta
-    fmul dword[radian]                  ;st0 *= radian
-    fld st0                             ;st1 = st0
-    fsin                                ;st0 = sin(st0)
-    fstp dword[sintheta]                ;sintheta = st0
-
-    fcos                                ;st0 = cos(st0)
-    fstp dword[costheta]                ;costheta = st0
-
-
-    mov rdx, object                     ;rdx points to object
-    mov cx, word[rdx]                   ;cx = number of nodes
-    add rdx, 4
-    push rdx
-
-    mov rax, 12                         ;rax = number of nodes                 
-    mul rcx                             ;rax = n of nodes * 12
-    pop rdx
-    add rdx, rax                        ;rdx points to last node
-;for rcx = n of nodes; rcx > 0; rcx--
-.loop:  
-    sub rdx, 4
-    movss xmm0, dword[rdx]              ;xmm0 = z
-    sub rdx, 4
-    movss xmm1, dword[rdx]              ;xmm1 = y
-
-    movss xmm2, xmm1
-    mulss xmm2, dword[costheta]         ;xmm2 = y * costheta
-    movss xmm3, xmm0
-    mulss xmm3, dword[sintheta]         ;xmm3 = z * sintheta
-    subss xmm2, xmm3
-    movss dword[rdx], xmm2              ;y[rcx] = y*cosTheta - z*sinTheta
-
-    movss xmm2, xmm0
-    mulss xmm2, dword[costheta]         ;xmm2 = z * costheta
-    movss xmm3, xmm1
-    mulss xmm3, dword[sintheta]         ;xmm3 = y * sintheta
-    addss xmm2, xmm3
-    add rdx, 4
-    movss dword[rdx], xmm2              ;z[rcx] = z*cosTheta + y*sinTheta
-
-    sub rdx, 8
-    dec rcx
-    jnz .loop
-
-    ret
-    
-_rotateY3D:
-    movss dword[theta], xmm0            ;theta = degrees
-
-    fld dword[theta]                    ;st0 = theta
-    fmul dword[radian]                  ;st0 *= radian
-    fld st0                             ;st1 = st0
-    fsin                                ;st0 = sin(st0)
-    fstp dword[sintheta]                ;sinthate = st0
-
-    fcos                                ;st0 = sin(st0)
-    fstp dword[costheta]                ;costheta = st0
-
-
-    mov rdx, object                     ;rdx points to object
-    mov cx, word[rdx]                   ;cx = number of nodes
-    add rdx, 4
-    push rdx
-
-    mov rax, 12
-    mul rcx
-    pop rdx
-    add rdx, rax                        ;rdx point to last node
-;for rcx = n of nodes; rcx > 0; rcx--
-.loop:  
-    sub rdx, 4
-    movss xmm0, dword[rdx]              ;xmm0 = z
-    sub rdx, 8
-    movss xmm1, dword[rdx]              ;xmm1 = x
-
-    movss xmm2, xmm1
-    mulss xmm2, dword[costheta]         ;xmm2 = x * costheta
-    movss xmm3, xmm0
-    mulss xmm3, dword[sintheta]         ;xmm3 = z * sintheta
-    subss xmm2, xmm3
-    movss dword[rdx], xmm2              ;x[rcx] = x * cosTheta - z * sinTheta
-
-    movss xmm2, xmm0
-    mulss xmm2, dword[costheta]         ;xmm2 = z * costheta
-    movss xmm3, xmm1
-    mulss xmm3, dword[sintheta]         ;xmm3 = x * sintheta
-    addss xmm2, xmm3
-    add rdx, 8
-    movss dword[rdx], xmm2              ;z[rcx] = z * cosTheta + y * sinTheta
-
-    sub rdx, 8
-    dec rcx
-    jnz .loop
-
-    ret
-
-_rotateZ3D:
-    movss dword[theta], xmm0            ;theta = degrees
-
-    fld dword[theta]
-    fmul dword[radian]
-    fsin
-    fstp dword[sintheta]
-
-    fld dword[theta]
-    fmul dword[radian]
-    fcos
-    fstp dword[costheta]
-
-
-    mov rdx, object
-    mov cx, word[rdx]
-    add rdx, 4
-
-    mov rax, rcx
-    mov rbx, 12
-    push rdx
-    mul rbx
-    pop rdx
-    add rdx, rax
-
-.loop:  
-    sub rdx, 8
-    movss xmm0, dword[rdx]         ;xmm0 = y
-    
-    sub rdx, 4
-    movss xmm1, dword[rdx]          ;xmm1 = x
-
-    movss xmm2, xmm1
-    mulss xmm2, dword[costheta]         ;xmm2 = x * costheta
-    movss xmm3, xmm0
-    mulss xmm3, dword[sintheta]         ;xmm3 = y * sintheta
-    subss xmm2, xmm3
-    movss dword[rdx], xmm2              ;x = xmm2
-
-    movss xmm2, xmm0
-    mulss xmm2, dword[costheta]     ;xmm2 = y * costheta
-    movss xmm3, xmm1
-    mulss xmm3, dword[sintheta]     ;xmm3 = x * sintheta
-    addss xmm2, xmm3
-    add rdx, 4
-    movss dword[rdx], xmm2
-    sub rdx, 4
-    dec rcx
-    jnz .loop
-
-    ret
-
+;pause program for time specyfied in timespec's structure
 _sleep:
     mov rax, 35
     mov rdi, timespec
@@ -827,6 +653,7 @@ _sleep:
     syscall
     ret
 
+;print (display_size) bytes in terminal
 _printDisplay: 
     mov rax, 1
     mov rdi, 1
@@ -835,36 +662,37 @@ _printDisplay:
     syscall
     ret
 
+;updates terminal size, set display_size, number of collumns, xshift and yshift
 _updateTerminalSize:
     mov rax, 16
     mov rdi, 1
     mov rsi, 0x5413
     mov rdx, sz
     syscall
-
-    mov dx, 0
-    mov ax, word[sz+2]
+    ;word[sz+0] = rows
+    ;word[sz+2] = collumns
+    ;load adn set collumns size
+    mov ax, [sz+2]
     add ax, 1
     mov [coll], ax
+    ;calculate xshift value
+    mov dx, 0
     mov cx, 2
     div cx
     mov [xshift], ax
-
+    ;calculate yshift value
     mov dx, 0
-    mov ax, word[sz+0]
+    mov ax, [sz+0]
     mov cx, 2
     div cx
     mov [yshift], ax
-
-    mov ax, word[sz+2]
+    ;calculate display size, multiple rows and colummns
+    mov ax, [sz+2]
     add ax, 1
-    mov cx, word[sz+0]
-    _b2:
+    mov cx, [sz+0]
     mul cx
-    mov rdx, display_size
-    mov word[rdx], ax
-
-    _b1:
+    mov [display_size], ax
+    
     ret
 
 _exit:

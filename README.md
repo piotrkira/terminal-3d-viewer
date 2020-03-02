@@ -11,7 +11,7 @@ Compiled and tested on x86 Ubuntu 19.10
 
 # Usage
 To download:  
-`https://github.com/piotrkira/terminal-3d-viewer.git`  
+`git clone https://github.com/piotrkira/terminal-3d-viewer.git`  
 
 To view 3D object:  
 `./t3dv filename`  

@@ -1,5 +1,5 @@
 ;####################################################
-;#                                                  # 
+;#                                                  #
 ;#                  Piotr Kira                      #
 ;#                                                  #
 ;####################################################
@@ -15,7 +15,7 @@
 
 %include "rotations.asm"
 
-ROW equ 200            
+ROW equ 200
 COL equ 300
 MAX_DISPLAY_SIZE equ ROW*COL
 
@@ -34,7 +34,7 @@ section .data
         tv_nsec dq 14000000
 
 section .bss
-    ;array that represents display, 
+    ;array that represents display,
     ;if terminal size (coll*rows) is bigger than declared size program will crash
     display resb MAX_DISPLAY_SIZE
     x resb 8
@@ -80,7 +80,7 @@ _start:
     call _updateTerminalSize
     call _load3dObject
     rotateZ3D 160
-    
+
     mov rcx, 10000
 .loop:
     push rcx
@@ -93,7 +93,7 @@ _start:
     call _drawObject
     call _printDisplay
     call _sleep
-    
+
     pop rcx
     dec rcx
     jnz .loop
@@ -103,8 +103,8 @@ _start:
 ;Fill display aray with blank spaces
 _prepareDisplay:
     mov rdx, display
-    mov bx, [display_size]  
-    mov rcx, rbx 
+    mov bx, [display_size]
+    mov rcx, rbx
 .loop:
     push rdx
     mov rdx, 0
@@ -208,7 +208,7 @@ _ifend2:
 
     add rcx, display
     push rdx
-    push rax  
+    push rax
     mov bx, [coll]
     pop rax
     pop rdx
@@ -222,7 +222,7 @@ _ifend2:
     sub rax, rdx
 _loop1:                         ;for(x, x < xe, x++)
 
-    
+
     push rax
     inc rdx
     push rdx
@@ -404,7 +404,7 @@ _ifend6:
 _ifend1:
     ret
 
-;load given filename (console 1st argument) to object variable    
+;load given filename (console 1st argument) to object variable
 _load3dObject:
     mov rbx, [rsp + 24]
     mov rax, SYS_OPEN
@@ -414,7 +414,7 @@ _load3dObject:
     syscall
 
     push rax
-    
+
     ;read first number, n of nodes
     .loop:
     pop rdi
@@ -423,7 +423,7 @@ _load3dObject:
     mov rsi, buff
     mov rdx, 1
     syscall
-    
+
     mov rbx, [buff]
     cmp rbx, 48
     jl .next
@@ -441,7 +441,7 @@ _load3dObject:
     mov r10, object
     mov [r10], r8w
     add r10, 2
-    
+
 
     ;read second number, n of connections
     .loop2:
@@ -530,7 +530,7 @@ _load3dObject:
     mul rbx
     mov rcx, rax
     pop rbx
-    push rcx 
+    push rcx
     push rbx
     ;this loop will be executed 2*(n of connections)
     .loop5:
@@ -542,7 +542,7 @@ _load3dObject:
     mov rsi, buff
     mov rdx, 1
     syscall
-    
+
     mov rbx, [buff]
     cmp rbx, 48
     jl .next4
@@ -566,7 +566,7 @@ _load3dObject:
     jnz .loop5
     pop rdi
     pop rcx
-    
+
     mov rax, SYS_CLOSE
     syscall
 
@@ -604,7 +604,7 @@ _drawObject:
     cvtss2si r8, [rdx]
     add rdx, 4
     cvtss2si r9, [rdx]
-    add rdx, 4  
+    add rdx, 4
 
 
     pop rdx
@@ -654,7 +654,7 @@ _sleep:
     ret
 
 ;print (display_size) bytes in terminal
-_printDisplay: 
+_printDisplay:
     mov rax, 1
     mov rdi, 1
     mov rsi, display
@@ -692,7 +692,7 @@ _updateTerminalSize:
     mov cx, [sz+0]
     mul cx
     mov [display_size], ax
-    
+
     ret
 
 _exit:

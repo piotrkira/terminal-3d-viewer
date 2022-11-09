@@ -36,13 +36,13 @@ _prepareToRotate:
     fstp dword[sintheta]                ;sintheta = sin(theta * radian)
     fcos
     fstp dword[costheta]                ;costheta = cos(theta * radian)
-    ;read n of nodes 
+    ;read n of nodes
     mov rdx, object
     mov cx, [rdx]
     push rdx
     ;set memory addres to last node, z coordinate
     ;we multiply by 12 because 12 is a sizeof the whole node (x, y,z where each of them is size of 4, dword)
-    mov rax, 12            
+    mov rax, 12
     mul rcx
     pop rdx
     sub rax, 8
@@ -83,7 +83,7 @@ _rotateX3D:
 ;It works exactly "same" as _rotateX3D
 _rotateY3D:
     call _prepareToRotate
-.loop:  
+.loop:
     movss xmm0, [rdx+8]
     movss xmm1, [rdx]
 
@@ -110,7 +110,7 @@ _rotateY3D:
 ;It works exactly "same" as _rotateX3D
 _rotateZ3D:
     call _prepareToRotate
-.loop:  
+.loop:
     movss xmm0, [rdx+4]
     movss xmm1, [rdx]
 

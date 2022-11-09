@@ -4,7 +4,7 @@
 ;#                                                  #
 ;####################################################
 
-;TODO
+; TODO
 ; add explanatory comments
 ; delete some ifs that are never reachable (?)
 ; user friendly errors
@@ -27,15 +27,15 @@ SYS_WRITE equ 4
 O_RDONLY equ 0
 
 section .data
-    radian dd 0.01745329252         ;degree/radian
-    ;struct represents time to stop program used by _sleep function
+    radian dd 0.01745329252         ; degree/radian
+    ; struct represents time to stop program used by _sleep function
     timespec:
         tv_sec dq 0
         tv_nsec dq 14000000
 
 section .bss
-    ;array that represents display,
-    ;if terminal size (coll*rows) is bigger than declared size program will crash
+    ; array that represents display,
+    ; if terminal size (coll*rows) is bigger than declared size program will crash
     display resb MAX_DISPLAY_SIZE
     x resb 8
     y resb 8
@@ -100,7 +100,7 @@ _start:
 
     exit
 
-;Fill display aray with blank spaces
+; Fill display aray with blank spaces
 _prepareDisplay:
     mov rdx, display
     mov bx, [display_size]
@@ -115,7 +115,7 @@ _prepareDisplay:
     pop rcx
     cmp rdx, 0
     pop rdx
-    ;if it's enf of line insert newline character to array, if not insert space character
+    ; if it's enf of line insert newline character to array, if not insert space character
     jne .noEndOfLine
     mov byte[rdx], 10
     jmp .skip
@@ -126,10 +126,10 @@ _prepareDisplay:
     loop .loop
     ret
 
-;Insert line to dsiplay array
-;r8 = x1, r9 = y1, r10 = x2, r11 = y2
+; Insert line to dsiplay array
+; r8 = x1, r9 = y1, r10 = x2, r11 = y2
 _addLineToDisplay:
-    ;if x1 is greater than x2 replace p1(x1, y1) with p2(x2, y2)
+    ; if x1 is greater than x2 replace p1(x1, y1) with p2(x2, y2)
     cmp r8, r10
     jng .ifend9
     mov rax, r8
@@ -141,61 +141,61 @@ _addLineToDisplay:
     mov r11, rax
 .ifend9:
 
-    mov rax, r8                 ;rax = x1
-    mov rbx, r10                ;rbx = x2
-    sub rbx, rax                ;rbx = deltax = x2 - x1
-    mov [deltax], rbx           ;save deltax to memory
+    mov rax, r8                 ; rax = x1
+    mov rbx, r10                ; rbx = x2
+    sub rbx, rax                ; rbx = deltax = x2 - x1
+    mov [deltax], rbx           ; save deltax to memory
 
-    test rbx, rbx               ;is deltax negative
+    test rbx, rbx               ; is deltax negative
 _if_deltax_neg:
-    jns .end                    ;if not jump to end, otherwise continue
-    neg rbx                     ;rbx = absolute of deltax
+    jns .end                    ; if not jump to end, otherwise continue
+    neg rbx                     ; rbx = absolute of deltax
 .end:
-    mov [dx1], rbx              ;save abs(deltax) to memory
+    mov [dx1], rbx              ; save abs(deltax) to memory
 
-    mov rax, r9                 ;rax = y1
-    mov rbx, r11                ;rbx = y2
-    sub rbx, rax                ;rbx = deltay = y2 - y1
-    mov [deltay], rbx           ;save deltay to memory
+    mov rax, r9                 ; rax = y1
+    mov rbx, r11                ; rbx = y2
+    sub rbx, rax                ; rbx = deltay = y2 - y1
+    mov [deltay], rbx           ; save deltay to memory
 
-    test rbx, rbx               ;is deltay negative
+    test rbx, rbx               ; is deltay negative
 _if_deltay_neg:
-    jns .end                    ;if not jump to end, otherwise continue
-    neg rbx                     ;rbx = abs(deltax)
+    jns .end                    ; if not jump to end, otherwise continue
+    neg rbx                     ; rbx = abs(deltax)
 .end:
-    mov [dy1], rbx              ;save abs(deltay) to memory
+    mov [dy1], rbx              ; save abs(deltay) to memory
 
-    mov rax, [dy1]              ;rax = dy1
-    mov rdx, 2                  ;rdx = 2
-    mul rdx                     ;rax = 2*dy1
-    sub rax, [dx1]              ;rax = px = 2*dy1-dx1
-    mov [px], rax               ;save px to memory
+    mov rax, [dy1]              ; rax = dy1
+    mov rdx, 2                  ; rdx = 2
+    mul rdx                     ; rax = 2*dy1
+    sub rax, [dx1]              ; rax = px = 2*dy1-dx1
+    mov [px], rax               ; save px to memory
 
-    mov rax, [dx1]              ;rax = dx1
-    mov rdx, 2                  ;rdx = 2
-    mul rdx                     ;rax = 2*dx1
-    sub rax, [dy1]              ;rax = py = 2*dx1-dy1
-    mov [py], rax               ;save py to memory
+    mov rax, [dx1]              ; rax = dx1
+    mov rdx, 2                  ; rdx = 2
+    mul rdx                     ; rax = 2*dx1
+    sub rax, [dy1]              ; rax = py = 2*dx1-dy1
+    mov [py], rax               ; save py to memory
 
-    mov rax, [dy1]              ;rax = dy1
-    mov rbx, [dx1]              ;rax = dx1
-    cmp rax, rbx                ;compare dy1 with dx1
-_if1:                           ;if dy1 <= dx1 continue
-    jg _else1                   ;if false jump to else1
+    mov rax, [dy1]              ; rax = dy1
+    mov rbx, [dx1]              ; rax = dx1
+    cmp rax, rbx                ; compare dy1 with dx1
+_if1:                           ; if dy1 <= dx1 continue
+    jg _else1                   ; if false jump to else1
 
-    mov rax, [deltax]           ;rax = deltax
-    cmp rax, 0                  ;compare deltax with 0
-_if2:                           ;if deltax >= 0 continue
-    jl _else2                   ;if false jump to else2
+    mov rax, [deltax]           ; rax = deltax
+    cmp rax, 0                  ; compare deltax with 0
+_if2:                           ; if deltax >= 0 continue
+    jl _else2                   ; if false jump to else2
 
-    mov [x], r8                 ;x = x1
-    mov [y], r9                 ;y = y1
-    mov [xe], r10               ;xe = x2
+    mov [x], r8                 ; x = x1
+    mov [y], r9                 ; y = y1
+    mov [xe], r10               ; xe = x2
     jmp _ifend2
 _else2:
-    mov [x], r10                ;x = x2
-    mov [y], r11                ;y = y2
-    mov [xe], r9                ;xe = x1
+    mov [x], r10                ; x = x2
+    mov [y], r11                ; y = y2
+    mov [xe], r9                ; xe = x1
 _ifend2:
     mov rcx, [x]
     cmp rcx, 0
@@ -213,28 +213,28 @@ _ifend2:
     pop rax
     pop rdx
     mul rbx
-    add rcx, rax                ;select row y
-    mov byte[rcx], '#'          ;draw # at (x, y)
+    add rcx, rax                ; select row y
+    mov byte[rcx], '#'          ; draw # at (x, y)
     .skip:
 
     mov rax, [xe]
     mov rdx, [x]
     sub rax, rdx
-_loop1:                         ;for(x, x < xe, x++)
+_loop1:                         ; for(x, x < xe, x++)
 
 
     push rax
     inc rdx
     push rdx
     mov rbx, px
-    cmp word[rbx], 0            ;compare px with 0
-_if3:                           ;if px < 0 continue
-    jge _else3                  ;if false jump to else3
+    cmp word[rbx], 0            ; compare px with 0
+_if3:                           ; if px < 0 continue
+    jge _else3                  ; if false jump to else3
 
     mov rax, [dy1]
     mov rcx, 2
     mul rcx
-    add [rbx], rax              ;px = px+2*dy1
+    add [rbx], rax              ; px = px+2*dy1
 
     jmp _ifend3
 _else3:
@@ -251,18 +251,18 @@ _or4:
     jle _else4
     cmp rdx, 0
     jle _else4
-_true4:                         ;if (dx < 0 && dy < 0) || (dx > 0 && dy > 0))
-    inc qword[rcx]              ;y++
+_true4:                         ; if (dx < 0 && dy < 0) || (dx > 0 && dy > 0))
+    inc qword[rcx]              ; y++
     jmp _ifend4
 _else4:
-    dec qword[rcx]              ;y--
+    dec qword[rcx]              ; y--
 _ifend4:
 
     mov rax, [dy1]
     sub rax, [dx1]
     mov rcx, 2
     mul rcx
-    add [rbx], rax              ;px = px+2*(dy1-dx1)
+    add [rbx], rax              ; px = px+2*(dy1-dx1)
 _ifend3:
     mov rcx, [rsp]
     cmp rcx, 0
@@ -291,10 +291,10 @@ _ifend3:
     dec rax
     jnz _loop1
 
-    jmp _ifend1                 ;end if1
+    jmp _ifend1                 ; end if1
 _else1:
-    mov rax, [deltay]           ;rax = deltay
-    cmp rax, 0                  ;compare deltay with 0
+    mov rax, [deltay]           ; rax = deltay
+    cmp rax, 0                  ; compare deltay with 0
 _if5:
     jl _else5
 
@@ -317,7 +317,7 @@ _ifend5:
     cmp rax, 0
     jl .skip
 
-    add rcx, display            ;rcx = display
+    add rcx, display            ; rcx = display
     push rdx
     push rax
     mov ax, [coll]
@@ -325,27 +325,27 @@ _ifend5:
     pop rax
     pop rdx
     mul rbx
-    add rcx, rax                ;select row y
-    mov byte[rcx], '#'          ;draw # at (x, y)
+    add rcx, rax                ; select row y
+    mov byte[rcx], '#'          ; draw # at (x, y)
     .skip:
 
     mov rax, [ye]
     mov rdx, [y]
     sub rax, rdx
-_loop2:                         ;for(y, y < ye, y++)
+_loop2:                         ; for(y, y < ye, y++)
 
     push rax
     inc rdx
     push rdx
     mov rbx, py
-    cmp word[rbx], 0            ;compare py with 0
-_if6:                           ;if py <= 0 continue
-    jg _else6                   ;if false jump to else3
+    cmp word[rbx], 0            ; compare py with 0
+_if6:                           ; if py <= 0 continue
+    jg _else6                   ; if false jump to else3
 
     mov rax, [dx1]
     mov rcx, 2
     mul rcx
-    add [rbx], rax              ;py = py+2*dx1
+    add [rbx], rax              ; py = py+2*dx1
 
     jmp _ifend6
 _else6:
@@ -362,18 +362,18 @@ _or7:
     jle _else7
     cmp rdx, 0
     jle _else7
-_true7:                         ;if (dx < 0 && dy < 0) || (dx > 0 && dy > 0))
-    inc qword[rcx]               ;x++
+_true7:                         ; if (dx < 0 && dy < 0) || (dx > 0 && dy > 0))
+    inc qword[rcx]               ; x++
     jmp _ifend7
 _else7:
-    dec qword[rcx]               ;x--
+    dec qword[rcx]               ; x--
 _ifend7:
 
     mov rax, [dx1]
     sub rax, [dy1]
     mov rcx, 2
     mul rcx
-    add [rbx], rax              ;px = px+2*(dx1-dy1)
+    add [rbx], rax              ; px = px+2*(dx1-dy1)
 
 _ifend6:
 
@@ -404,7 +404,7 @@ _ifend6:
 _ifend1:
     ret
 
-;load given filename (console 1st argument) to object variable
+; load given filename (console 1st argument) to object variable
 _load3dObject:
     mov rbx, [rsp + 24]
     mov rax, SYS_OPEN
@@ -415,7 +415,7 @@ _load3dObject:
 
     push rax
 
-    ;read first number, n of nodes
+    ; read first number, n of nodes
     .loop:
     pop rdi
     push rdi
@@ -443,7 +443,7 @@ _load3dObject:
     add r10, 2
 
 
-    ;read second number, n of connections
+    ; read second number, n of connections
     .loop2:
     pop rdi
     push rdi
@@ -477,9 +477,9 @@ _load3dObject:
     pop rbx
     push rcx
     push rbx
-    ;this loop will be executed 3*(n of nodes)
+    ; this loop will be executed 3*(n of nodes)
     .loop3:
-    mov r12, 0               ;true if is negative
+    mov r12, 0               ; true if is negative
     xor r8, r8
     .loop4:
     pop rdi
@@ -532,7 +532,7 @@ _load3dObject:
     pop rbx
     push rcx
     push rbx
-    ;this loop will be executed 2*(n of connections)
+    ; this loop will be executed 2*(n of connections)
     .loop5:
     xor r8, r8
     .loop6:
@@ -570,13 +570,13 @@ _load3dObject:
     mov rax, SYS_CLOSE
     syscall
 
-    xor rcx, rcx            ;todo delete this, replace lines in drawcube with rax not , dword[rax]
+    xor rcx, rcx            ; todo delete this, replace lines in drawcube with rax not , dword[rax]
     ret
 
-;draw object from given variable, actually it's static and draws object from "object" variable but it can work with any object variable
+; draw object from given variable, actually it's static and draws object from "object" variable but it can work with any object variable
 _drawObject:
-    mov bx, [object]        ;number of nodes
-    mov cx, [object+2]      ;number of connectins
+    mov bx, [object]        ; number of nodes
+    mov cx, [object+2]      ; number of connectins
 
 .loop:
     push rbx
@@ -619,12 +619,12 @@ _drawObject:
     add rdx, 4
     cvtss2si r11, [rdx]
 
-    mov rax, xshift         ;do it better
+    mov rax, xshift         ; do it better
     mov bx, [rax]
     add r8, rbx
     add r10, rbx
 
-    mov rax, yshift         ;do it better
+    mov rax, yshift         ; do it better
     mov bx, [rax]
     add r9, rbx
     add r11, rbx
@@ -645,7 +645,7 @@ _drawObject:
     jnz .loop
     ret
 
-;pause program for time specyfied in timespec's structure
+; pause program for time specyfied in timespec's structure
 _sleep:
     mov rax, 35
     mov rdi, timespec
@@ -653,7 +653,7 @@ _sleep:
     syscall
     ret
 
-;print (display_size) bytes in terminal
+; print (display_size) bytes in terminal
 _printDisplay:
     mov rax, 1
     mov rdi, 1
@@ -662,31 +662,31 @@ _printDisplay:
     syscall
     ret
 
-;updates terminal size, set display_size, number of collumns, xshift and yshift
+; updates terminal size, set display_size, number of collumns, xshift and yshift
 _updateTerminalSize:
     mov rax, 16
     mov rdi, 1
     mov rsi, 0x5413
     mov rdx, sz
     syscall
-    ;word[sz+0] = rows
-    ;word[sz+2] = collumns
-    ;load adn set collumns size
+    ; word[sz+0] = rows
+    ; word[sz+2] = collumns
+    ; load adn set collumns size
     mov ax, [sz+2]
     add ax, 1
     mov [coll], ax
-    ;calculate xshift value
+    ; calculate xshift value
     mov dx, 0
     mov cx, 2
     div cx
     mov [xshift], ax
-    ;calculate yshift value
+    ; calculate yshift value
     mov dx, 0
     mov ax, [sz+0]
     mov cx, 2
     div cx
     mov [yshift], ax
-    ;calculate display size, multiple rows and colummns
+    ; calculate display size, multiple rows and colummns
     mov ax, [sz+2]
     add ax, 1
     mov cx, [sz+0]

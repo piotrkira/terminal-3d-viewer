@@ -619,13 +619,11 @@ _drawObject:
     add rdx, 4
     cvtss2si r11, [rdx]
 
-    mov rax, xshift         ; do it better
-    mov bx, [rax]
+    mov bx, [xshift]
     add r8, rbx
     add r10, rbx
 
-    mov rax, yshift         ; do it better
-    mov bx, [rax]
+    mov bx, [yshift]
     add r9, rbx
     add r11, rbx
 

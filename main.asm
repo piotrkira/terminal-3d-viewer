@@ -643,7 +643,7 @@ _updateTerminalSize:
     ; word[sz+2] = collumns
     ; load adn set collumns size
     mov ax, [sz+2]
-    add ax, 1
+    inc ax
     mov [coll], ax
     ; calculate xshift value
     mov dx, 0

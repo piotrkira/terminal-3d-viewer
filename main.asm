@@ -136,9 +136,8 @@ _addLineToDisplay:
     mov r11, rax
 .ifend9:
 
-    mov rax, r8                 ; rax = x1
     mov rbx, r10                ; rbx = x2
-    sub rbx, rax                ; rbx = deltax = x2 - x1
+    sub rbx, r8                 ; rbx = deltax = x2 - x1
     mov [deltax], rbx           ; save deltax to memory
 
     test rbx, rbx               ; is deltax negative
@@ -148,9 +147,8 @@ _if_deltax_neg:
 .end:
     mov [dx1], rbx              ; save abs(deltax) to memory
 
-    mov rax, r9                 ; rax = y1
     mov rbx, r11                ; rbx = y2
-    sub rbx, rax                ; rbx = deltay = y2 - y1
+    sub rbx, r9                 ; rbx = deltay = y2 - y1
     mov [deltay], rbx           ; save deltay to memory
 
     test rbx, rbx               ; is deltay negative
@@ -160,11 +158,10 @@ _if_deltay_neg:
 .end:
     mov [dy1], rbx              ; save abs(deltay) to memory
 
-    mov rax, [dy1]              ; rax = dy1
     mov rdx, 2                  ; rdx = 2
     mul rdx                     ; rax = 2*dy1
-    sub rax, [dx1]              ; rax = px = 2*dy1-dx1
-    mov [px], rax               ; save px to memory
+    sub rbx, [dx1]              ; rax = px = 2*dy1-dx1
+    mov [px], rbx               ; save px to memory
 
     mov rax, [dx1]              ; rax = dx1
     mov rdx, 2                  ; rdx = 2
@@ -659,8 +656,7 @@ _updateTerminalSize:
     div cx
     mov [yshift], ax
     ; calculate display size, multiple rows and colummns
-    mov ax, [sz+2]
-    add ax, 1
+    mov ax, [coll]
     mul word[sz]
     mov [display_size], ax
 

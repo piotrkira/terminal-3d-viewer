@@ -37,16 +37,15 @@ _prepareToRotate:
     fcos
     fstp dword[costheta]                ; costheta = cos(theta * radian)
     ; read n of nodes
-    mov rdx, object
-    mov cx, [rdx]
-    push rdx
+    mov r8, object
+    mov cx, [r8]
     ; set memory addres to last node, z coordinate
     ; we multiply by 12 because 12 is a sizeof the whole node (x, y,z where each of them is size of 4, dword)
     mov rax, 12
     mul rcx
-    pop rdx
     sub rax, 8
-    add rdx, rax
+    add r8, rax
+    mov rdx, r8
     ; rdx points to last node, x coordinate
     ; rcx = n of nodes
     ret

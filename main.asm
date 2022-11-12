@@ -102,24 +102,22 @@ _start:
 
 ; Fill display aray with blank spaces
 _prepareDisplay:
-    mov rdx, display
+    mov r8, display
     mov bx, [display_size]
     mov rcx, rbx
 .loop:
-    push rdx
     mov rdx, 0
     mov rax, rcx
     div word[coll]
     cmp rdx, 0
-    pop rdx
     ; if it's enf of line insert newline character to array, if not insert space character
     jne .noEndOfLine
-    mov byte[rdx], 10
+    mov byte[r8], 10
     jmp .skip
 .noEndOfLine:
-    mov byte[rdx], ' '
+    mov byte[r8], ' '
 .skip:
-    inc rdx
+    inc r8
     loop .loop
     ret
 
@@ -266,10 +264,8 @@ _ifend3:
     jl .skip
 
     add rcx, display
-    push rax
-    mov ax, word[coll]
-    mov rbx, rax
-    pop rax
+    mov r8w, word[coll]
+    mov rbx, r8
     mul rbx
     add rcx, rax
     mov byte[rcx], '#'
@@ -307,12 +303,8 @@ _ifend5:
     jl .skip
 
     add rcx, display            ; rcx = display
-    push rdx
-    push rax
-    mov ax, [coll]
-    mov rbx, rax
-    pop rax
-    pop rdx
+    mov r8w, [coll]
+    mov rbx, r8
     mul rbx
     add rcx, rax                ; select row y
     mov byte[rcx], '#'          ; draw # at (x, y)
@@ -375,12 +367,8 @@ _ifend6:
     cmp rax, 0
     jl .skip
     add rcx, display
-    push rdx
-    push rax
-    mov ax, [coll]
-    mov rbx, rax
-    pop rax
-    pop rdx
+    mov r8w, [coll]
+    mov rbx, r8
     mul rbx
     add rcx, rax
     mov byte[rcx], '#'
@@ -579,11 +567,10 @@ _drawObject:
     mov rdx, 4
     mul rdx
     add rax, rbx
-    mov rdx, object
-    add rdx, rax
-    push rdx
+    mov r10, object
+    add r10, rax
 
-    mov ax, [rdx]
+    mov ax, [r10]
 
     mov rbx, 12
     mul rbx
@@ -596,9 +583,8 @@ _drawObject:
     add rdx, 4
 
 
-    pop rdx
-    add rdx, 2
-    mov ax, [rdx]
+    add r10, 2
+    mov ax, [r10]
     mov rbx, 12
     mul rbx
     mov rdx, object

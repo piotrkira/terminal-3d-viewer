@@ -20,9 +20,9 @@ COL equ 300
 MAX_DISPLAY_SIZE equ ROW*COL
 
 SYS_READ equ 0
+SYS_WRITE equ 1
 SYS_OPEN equ 2
 SYS_CLOSE equ 3
-SYS_WRITE equ 4
 
 O_RDONLY equ 0
 
@@ -640,12 +640,12 @@ _sleep:
     syscall
     ret
 
-; print (display_size) bytes in terminal
+; print display variable to terminal
 _printDisplay:
-    mov rax, 1
-    mov rdi, 1
-    mov rsi, display
-    mov dx, [display_size]
+    mov rax, SYS_WRITE          ; set syscall
+    mov rdi, 1                  ; set stdout as output
+    mov rsi, display            ; set variable to print
+    mov dx, [display_size]      ; set size of buffer to print
     syscall
     ret
 

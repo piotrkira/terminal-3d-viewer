@@ -109,10 +109,7 @@ _prepareDisplay:
     push rdx
     mov rdx, 0
     mov rax, rcx
-    push rcx
-    mov cx, [coll]
-    div rcx
-    pop rcx
+    div word[coll]
     cmp rdx, 0
     pop rdx
     ; if it's enf of line insert newline character to array, if not insert space character
@@ -207,12 +204,7 @@ _ifend2:
     jl .skip
 
     add rcx, display
-    push rdx
-    push rax
-    mov bx, [coll]
-    pop rax
-    pop rdx
-    mul rbx
+    mul word[coll]
     add rcx, rax                ; select row y
     mov byte[rcx], '#'          ; draw # at (x, y)
     .skip:
@@ -274,13 +266,10 @@ _ifend3:
     jl .skip
 
     add rcx, display
-    push rdx
     push rax
-    mov rdx, coll
-    mov ax, [rdx]
+    mov ax, word[coll]
     mov rbx, rax
     pop rax
-    pop rdx
     mul rbx
     add rcx, rax
     mov byte[rcx], '#'
@@ -680,15 +669,13 @@ _updateTerminalSize:
     mov [xshift], ax
     ; calculate yshift value
     mov dx, 0
-    mov ax, [sz+0]
-    mov cx, 2
+    mov ax, [sz]
     div cx
     mov [yshift], ax
     ; calculate display size, multiple rows and colummns
     mov ax, [sz+2]
     add ax, 1
-    mov cx, [sz+0]
-    mul cx
+    mul word[sz]
     mov [display_size], ax
 
     ret

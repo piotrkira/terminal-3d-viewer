@@ -639,27 +639,20 @@ _updateTerminalSize:
     mov rsi, 0x5413
     mov rdx, sz
     syscall
-    ; word[sz+0] = rows
-    ; word[sz+2] = collumns
-    ; load adn set collumns size
-    mov ax, [sz+2]
-    inc ax
-    mov [coll], ax
-    ; calculate xshift value
+    mov ax, [sz+2]              ; ax = sz.collumns
+    inc ax                      ; ax++
+    mov [coll], ax              ; coll = ax
     mov dx, 0
-    mov cx, 2
-    div cx
-    mov [xshift], ax
-    ; calculate yshift value
+    mov cx, 2                   ; cx = 2
+    div cx                      ; ax = ax / 2 `ax is number of collumns`
+    mov [xshift], ax            ; xshift = ax
     mov dx, 0
-    mov ax, [sz]
-    div cx
-    mov [yshift], ax
-    ; calculate display size, multiple rows and colummns
-    mov ax, [coll]
-    mul word[sz]
-    mov [display_size], ax
-
+    mov ax, [sz]                ; ax = sz.rows
+    div cx                      ; ax = ax / cx which should be 2
+    mov [yshift], ax            ; yshift = ax
+    mov ax, [coll]              ; ax = coll
+    mul word[sz]                ; ax = ax * sz.rows
+    mov [display_size], ax      ; display_size = ax
     ret
 
 _exit:

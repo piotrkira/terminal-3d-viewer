@@ -163,15 +163,13 @@ _if_deltay_neg:
     sub rbx, [dx1]              ; rax = px = 2*dy1-dx1
     mov [px], rbx               ; save px to memory
 
-    mov rax, [dx1]              ; rax = dx1
-    mov rdx, 2                  ; rdx = 2
-    mul rdx                     ; rax = 2*dx1
+    mov rax, 2
+    mul qword[dx1]              ; rax = 2*dx1
     sub rax, [dy1]              ; rax = py = 2*dx1-dy1
     mov [py], rax               ; save py to memory
 
     mov rax, [dy1]              ; rax = dy1
-    mov rbx, [dx1]              ; rax = dx1
-    cmp rax, rbx                ; compare dy1 with dx1
+    cmp rax, [dx1]              ; compare dy1 with dx1
 _if1:                           ; if dy1 <= dx1 continue
     jg _else1                   ; if false jump to else1
 
@@ -213,28 +211,25 @@ _loop1:                         ; for(x, x < xe, x++)
     push rax
     inc rdx
     push rdx
-    mov rbx, px
-    cmp word[rbx], 0            ; compare px with 0
+    cmp word[px], 0             ; compare px with 0
 _if3:                           ; if px < 0 continue
     jge _else3                  ; if false jump to else3
 
-    mov rax, [dy1]
-    mov rcx, 2
-    mul rcx
-    add [rbx], rax              ; px = px+2*dy1
+    mov rax, 2
+    mul qword[dy1]
+    add [px], rax              ; px = px+2*dy1
 
     jmp _ifend3
 _else3:
-    mov rax ,[deltax]
     mov rdx ,[deltay]
     mov rcx, y
-    cmp rax, 0
+    cmp qword[deltax], 0
     jge _or4
     cmp rdx, 0
     jge _or4
     jmp _true4
 _or4:
-    cmp rax, 0
+    cmp qword[deltax], 0
     jle _else4
     cmp rdx, 0
     jle _else4
@@ -249,7 +244,7 @@ _ifend4:
     sub rax, [dx1]
     mov rcx, 2
     mul rcx
-    add [rbx], rax              ; px = px+2*(dy1-dx1)
+    add [px], rax              ; px = px+2*(dy1-dx1)
 _ifend3:
     mov rcx, [rsp]
     cmp rcx, 0
@@ -261,9 +256,8 @@ _ifend3:
     jl .skip
 
     add rcx, display
-    mov r8w, word[coll]
-    mov rbx, r8
-    mul rbx
+    mov rbx, r8                 ; FIXME: It seems I don't need it but can't delete idk why
+    mul word[coll]
     add rcx, rax
     mov byte[rcx], '#'
     .skip:
@@ -275,8 +269,7 @@ _ifend3:
 
     jmp _ifend1                 ; end if1
 _else1:
-    mov rax, [deltay]           ; rax = deltay
-    cmp rax, 0                  ; compare deltay with 0
+    cmp qword[deltay], 0        ; compare deltay with 0
 _if5:
     jl _else5
 
@@ -300,9 +293,7 @@ _ifend5:
     jl .skip
 
     add rcx, display            ; rcx = display
-    mov r8w, [coll]
-    mov rbx, r8
-    mul rbx
+    mul word[coll]
     add rcx, rax                ; select row y
     mov byte[rcx], '#'          ; draw # at (x, y)
     .skip:
@@ -320,23 +311,21 @@ _loop2:                         ; for(y, y < ye, y++)
 _if6:                           ; if py <= 0 continue
     jg _else6                   ; if false jump to else3
 
-    mov rax, [dx1]
-    mov rcx, 2
-    mul rcx
+    mov rax, 2
+    mul qword[dx1]
     add [rbx], rax              ; py = py+2*dx1
 
     jmp _ifend6
 _else6:
-    mov rax ,[deltax]
     mov rdx ,[deltay]
     mov rcx, x
-    cmp rax, 0
+    cmp qword[deltax], 0
     jge _or7
     cmp rdx, 0
     jge _or7
     jmp _true7
 _or7:
-    cmp rax, 0
+    cmp qword[deltax], 0
     jle _else7
     cmp rdx, 0
     jle _else7
@@ -364,9 +353,8 @@ _ifend6:
     cmp rax, 0
     jl .skip
     add rcx, display
-    mov r8w, [coll]
-    mov rbx, r8
-    mul rbx
+    mov rbx, r8                ; FIXME: Investigat why it's needed
+    mul word[coll]
     add rcx, rax
     mov byte[rcx], '#'
     .skip:
@@ -404,9 +392,8 @@ _load3dObject:
     cmp rbx, 57
     jg .next
     sub rbx, 48
-    mov rax, r8
-    mov rcx, 10
-    mul rcx
+    mov rax, 10
+    mul r8
     add rax, rbx
     mov r8, rax
     jmp .loop
@@ -432,9 +419,8 @@ _load3dObject:
     cmp rbx, 57
     jg .next2
     sub rbx, 48
-    mov rax, r9
-    mov rcx, 10
-    mul rcx
+    mov rax, 10
+    mul r9
     add rax, rbx
     mov r9, rax
     jmp .loop2
@@ -471,9 +457,8 @@ _load3dObject:
     cmp rbx, 57
     jg .next3
     sub rbx, 48
-    mov rax, r8
-    mov rdx, 10
-    mul rdx
+    mov rax, 10
+    mul r8
     add rax, rbx
     mov r8, rax
     jmp .skip
@@ -499,9 +484,8 @@ _load3dObject:
     pop rcx
     push rbx
 
-    mov rax, r9
-    mov rbx, 2
-    mul rbx
+    mov rax, 2
+    mul r9
     mov rcx, rax
     pop rbx
     push rcx
@@ -523,9 +507,8 @@ _load3dObject:
     cmp rbx, 57
     jg .next4
     sub rbx, 48
-    mov rax, r8
-    mov rdx, 10
-    mul rdx
+    mov rax, 10
+    mul r8
     add rax, rbx
     mov r8, rax
     jmp .loop6
@@ -549,16 +532,13 @@ _load3dObject:
 
 ; draw object from given variable, actually it's static and draws object from "object" variable but it can work with any object variable
 _drawObject:
-    mov bx, [object]        ; number of nodes
     mov cx, [object+2]      ; number of connectins
 
 .loop:
-    push rbx
     push rcx
 
-    mov rax, rbx
-    mov rdx, 12
-    mul rdx
+    mov ax, 12
+    mul word[object]
     mov rbx, rax
     mov rax, rcx
     mov rdx, 4
@@ -567,10 +547,9 @@ _drawObject:
     mov r10, object
     add r10, rax
 
-    mov ax, [r10]
+    mov ax, 12
 
-    mov rbx, 12
-    mul rbx
+    mul word[r10]
     mov rdx, object
     add rdx, rax
     add rdx, 4
@@ -581,9 +560,8 @@ _drawObject:
 
 
     add r10, 2
-    mov ax, [r10]
-    mov rbx, 12
-    mul rbx
+    mov ax, 12
+    mul word[r10]
     mov rdx, object
     add rdx, rax
     add rdx, 4
@@ -609,7 +587,6 @@ _drawObject:
     call _addLineToDisplay
 .skip1:
     pop rcx
-    pop rbx
 
     dec rcx
     jnz .loop
